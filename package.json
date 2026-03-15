@@ -1,0 +1,14 @@
+{
+  "name": "hh-school-ajax-homework",
+  "version": "1.0.0",
+  "description": "Домашнее задание по AJAX",
+  "main": "index.js",
+  "scripts": {
+    "server": "node ./server/app.js"
+  },
+  "author": "Nikolai Mikhalaki",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

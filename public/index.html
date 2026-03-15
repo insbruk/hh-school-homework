@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Таск менеджер</title>
+</head>
+<body>
+    <main style="max-width: 800px; margin: 0 auto">
+        <div style="display: flex; justify-content: space-between">
+            <h1>Таск менеджер</h1>
+            <div style="display: flex; align-items: center">
+                <button id="authButton">Войти</button>
+            </div>
+        </div>
+        <div id="appContent" style="display: none">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; padding-bottom: 12px;">
+                <input id="searchInput" type="text" value="" style="min-width: 250px" placeholder="Введите название задачи">
+                <select id="filterStatus" value="">
+                    <option value="">Все</option>
+                    <option value="completed">Выполненные</option>
+                    <option value="uncompleted">Невыполненные</option>
+                </select>
+                <button id="searchButton">Искать</button>
+            </div>
+            <h2>Список задач</h2>
+            <div id="tasks"></div>
+        </div>
+    </main>
+<script type="module" src="/static/storage.js"></script>
+<script type="module" src="/static/view.js"></script>
+<script type="module" src="/static/index.js"></script>
+</body>
+</html>
