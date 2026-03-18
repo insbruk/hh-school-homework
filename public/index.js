@@ -1,30 +1,113 @@
 import * as store from './storage.js'
-import * as view from './view.js';
-
+import * as view from './view.js'
 
 // Задача #1
-async function handleLogin () {
-    console.log('login')
+async function handleLogin() {
+    const credentials = {username: 'denis', password: '12345678!'}
+    const response = await fetch('/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+
+    if (!response.ok) {
+        throw new Error(`Ошибка авторизации: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.accessToken) {
+        throw new Error('Токен не получен')
+    }
+
+    localStorage.setItem('accessToken', data.accessToken)
 }
 
 // Задача #2
-async function handleInputChange({ target: { value }}) {
-    console.log(`searchTitle changed to "${value}"`)
+function handleInputChange({target: {value}}) {
+    store.setSearchTitle(value)
 }
 
 // Задача #2
-async function handleSelectChange({ target: { value }}) {
-    console.log(`filterStatus changed to "${value}"`)
+function handleSelectChange({target: {value}}) {
+    store.setFilterStatus(value)
 }
 
 // Задача #3 и #4
 async function handleSearchTasks() {
-    console.log('search')
+    const token = localStorage.getItem('accessToken')
+    if (!store.isAuthorized() || !token) {
+        return
+    }
+
+    const params = new URLSearchParams()
+    const searchTitle = localStorage.getItem('searchTitle')
+    const filterStatus = localStorage.getItem('filterStatus')
+
+    if (searchTitle) {
+        params.append('title', searchTitle)
+    }
+
+    if (filterStatus) {
+        params.append('status', filterStatus)
+    }
+
+    const query = params.toString()
+    const queryString = query ? `?${query}` : ''
+
+    const response = await fetch(`/tasks${queryString}`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    if (!response.ok) {
+        throw new Error('Неверный токен')
+    }
+
+    const data = await response.json()
+    store.setTasks(JSON.stringify(data.items))
+
+    const analyticsBody = new Blob(
+        [
+            JSON.stringify({
+                action: 'search',
+                searchTitle,
+                filterStatus
+            })
+        ],
+        {type: 'application/json'}
+    )
+    const responseAnalytics = navigator.sendBeacon('/analytics', analyticsBody)
+
+    if (!responseAnalytics) {
+        throw new Error('Не удалось отправить аналитику')
+    }
 }
 
 // Задача #5
-async function handleLogout () {
-    console.log('logout')
+async function handleLogout() {
+    const token = localStorage.getItem('accessToken')
+
+    if (!store.isAuthorized() || !token) {
+        throw new Error('Вы не авторизованы')
+    }
+
+    const response = await fetch('/logout', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    if (!response.ok) {
+        throw new Error(`Ошибка выхода: ${response.status}`)
+    }
+
+    localStorage.removeItem('accessToken')
 }
 
 // Код ниже редактировать не нужно
@@ -33,7 +116,7 @@ async function handleSearch() {
     view.updateAppContent()
 }
 
-async function handleAuthorization () {
+async function handleAuthorization() {
     try {
         if (store.isAuthorized()) {
             await handleLogout()
