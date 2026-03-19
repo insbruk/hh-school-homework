@@ -38,8 +38,8 @@ function handleSelectChange({target: {value}}) {
 // Задача #3 и #4
 async function handleSearchTasks() {
     const token = localStorage.getItem('accessToken')
-    if (!store.isAuthorized() || !token) {
-        return
+    if (!store.isAuthorized()) {
+        throw new Error("Неверный токен")
     }
 
     const params = new URLSearchParams()
@@ -65,7 +65,7 @@ async function handleSearchTasks() {
     })
 
     if (!response.ok) {
-        throw new Error('Неверный токен')
+        throw new Error(`Ошибка: ${response.status}`)
     }
 
     const data = await response.json()
@@ -92,7 +92,7 @@ async function handleSearchTasks() {
 async function handleLogout() {
     const token = localStorage.getItem('accessToken')
 
-    if (!store.isAuthorized() || !token) {
+    if (!store.isAuthorized()) {
         throw new Error('Вы не авторизованы')
     }
 
