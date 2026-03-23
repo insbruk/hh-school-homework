@@ -36,8 +36,11 @@ function handleInputChange({ target: { value } }) {
 }
 
 // Задача #2
-function handleSelectChange({ target: { value } }) {
+async function handleSelectChange({ target: { value } }) {
   store.setFilterStatus(value);
+  // Задача #2.1 - Бонусная - автопоиск при смене фильтра
+  await handleSearchTasks();
+  view.updateAppContent();
 }
 
 // Задача #3 и #4
