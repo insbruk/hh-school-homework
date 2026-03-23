@@ -2,31 +2,59 @@
 <html lang="en">
 <head>
     <title>Таск менеджер</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <main style="max-width: 800px; margin: 0 auto">
-        <div style="display: flex; justify-content: space-between">
-            <h1>Таск менеджер</h1>
-            <div style="display: flex; align-items: center">
-                <button id="authButton">Войти</button>
+
+    <div class="particles">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+
+    <main>
+        <div class="panel">
+
+            <div class="top-bar"></div>
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+            <div class="status-dot"></div>
+
+            <div class="header">
+                <h1>
+                    <span class="icon">⬡</span> TASK_CTRL
+                    <span class="version">v2.077 // neural-link active</span>
+                </h1>
+                <div>
+                    <button id="authButton">Войти</button>
+                </div>
             </div>
-        </div>
-        <div id="appContent" style="display: none">
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; padding-bottom: 12px;">
-                <input id="searchInput" type="text" value="" style="min-width: 250px" placeholder="Введите название задачи">
-                <select id="filterStatus" value="">
-                    <option value="">Все</option>
-                    <option value="completed">Выполненные</option>
-                    <option value="uncompleted">Невыполненные</option>
-                </select>
-                <button id="searchButton">Искать</button>
+
+            <div id="appContent" style="display: none">
+                <div class="search-bar">
+                    <input id="searchInput" type="text" value="" placeholder="> search query_">
+                    <select id="filterStatus" value="">
+                        <option value="">[ ВСЕ ]</option>
+                        <option value="completed">[ ВЫПОЛНЕННЫЕ ]</option>
+                        <option value="uncompleted">[ НЕВЫПОЛНЕННЫЕ ]</option>
+                    </select>
+                    <button id="searchButton">Искать</button>
+                </div>
+                <h2>Список задач</h2>
+                <div id="tasks"></div>
+
+                <div class="footer-info">
+                    <span>SYS::READY</span>
+                    <span>ENCRYPTED_CHANNEL</span>
+                    <span>PING: 12ms</span>
+                </div>
             </div>
-            <h2>Список задач</h2>
-            <div id="tasks"></div>
         </div>
     </main>
-<script type="module" src="/static/storage.js"></script>
-<script type="module" src="/static/view.js"></script>
-<script type="module" src="/static/index.js"></script>
+
+    <script type="module" src="/static/storage.js"></script>
+    <script type="module" src="/static/view.js"></script>
+    <script type="module" src="/static/index.js"></script>
 </body>
 </html>
