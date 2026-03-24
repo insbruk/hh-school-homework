@@ -3,8 +3,21 @@ import * as view from './view.js';
 
 
 // Задача #1
-async function handleLogin () {
-    console.log('login')
+async function handleLogin(username='vanya', password='123') {
+    if (!username || !password)
+        throw new Error("Отсутствуют данные")
+
+    await fetch('login', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: username, password: password}),
+    })
+        .then(res => {
+            res.json().then(body => {
+                    localStorage.setItem('accessToken', body.accessToken);
+                })
+        })
+        .catch(err => console.log(err))
 }
 
 // Задача #2
