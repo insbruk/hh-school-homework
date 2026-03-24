@@ -15,6 +15,7 @@ async function handleLogin(username='vanya', password='123') {
         .then(res => {
             res.json().then(body => {
                 localStorage.setItem('accessToken', body.accessToken);
+                console.log('login')
             })
         })
         .catch(err => console.log(err))
@@ -38,10 +39,6 @@ async function handleSearchTasks() {
     const filterStatus = localStorage.getItem('filterStatus') || '';
     const searchTitle = localStorage.getItem('searchTitle') || '';
 
-    if (!accessToken) {
-        throw new Error("Пользователь не авторизован")
-    }
-
     const params = new URLSearchParams();
     if (searchTitle) {
         params.append('title', searchTitle)
@@ -64,7 +61,7 @@ async function handleSearchTasks() {
         .then(promise => promise.json()
         .then(tasks =>
             store.setTasks(JSON.stringify(tasks.items))
-        ));
+        ).catch(err => console.log("Это из поиска" + err)));
     const analyticsBody = {
         action: 'search',
         searchTitle: searchTitle,
@@ -79,6 +76,20 @@ async function handleSearchTasks() {
 
 // Задача #5
 async function handleLogout () {
+    const accessToken = localStorage.getItem('accessToken') || '';
+    if (!accessToken) {
+        throw new Error("Пользователь не авторизован")
+    }
+    await fetch('/logout', {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        }
+    }).then(res => {
+        if (res.ok)
+            localStorage.removeItem('accessToken');
+    }).catch(err => console.log(err));
     console.log('logout')
 }
 
