@@ -14,8 +14,8 @@ async function handleLogin(username='vanya', password='123') {
     })
         .then(res => {
             res.json().then(body => {
-                    localStorage.setItem('accessToken', body.accessToken);
-                })
+                localStorage.setItem('accessToken', body.accessToken);
+            })
         })
         .catch(err => console.log(err))
 }
@@ -34,6 +34,37 @@ async function handleSelectChange({ target: { value }}) {
 
 // Задача #3 и #4
 async function handleSearchTasks() {
+    const accessToken = localStorage.getItem('accessToken') || '';
+    const filterStatus = localStorage.getItem('filterStatus') || '';
+    const searchTitle = localStorage.getItem('searchTitle') || '';
+
+    if (!accessToken) {
+        throw new Error("Пользователь не авторизован")
+    }
+
+    const params = new URLSearchParams();
+    if (searchTitle) {
+        params.append('title', searchTitle)
+    }
+
+    if (filterStatus) {
+        params.append('status', filterStatus)
+    }
+
+    const query = params.toString()
+    const queryString = query ? `?${query}` : ''
+
+    await fetch(`/tasks${queryString}`, {
+        method: 'get',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        }
+    })
+        .then(promise => promise.json()
+        .then(tasks =>
+            store.setTasks(JSON.stringify(tasks.items))
+        ));
     console.log('search')
 }
 
