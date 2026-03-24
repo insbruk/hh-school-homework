@@ -7,18 +7,18 @@ async function handleLogin(username='vanya', password='123') {
     if (!username || !password)
         throw new Error("Отсутствуют данные")
 
-    await fetch('login', {
+    const response = await fetch('login', {
         method: 'post',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({username: username, password: password}),
-    })
-        .then(res => {
-            res.json().then(body => {
-                localStorage.setItem('accessToken', body.accessToken);
-                console.log('login')
-            })
-        })
-        .catch(err => console.log(err))
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка авторизации: ${response.status}`);
+    }
+
+    const body = await response.json();
+    localStorage.setItem('accessToken', body.accessToken);
+    console.log('login success');
 }
 
 // Задача #2
@@ -39,6 +39,10 @@ async function handleSearchTasks() {
     const filterStatus = localStorage.getItem('filterStatus') || '';
     const searchTitle = localStorage.getItem('searchTitle') || '';
 
+    if (!accessToken) {
+        store.setTasks(JSON.stringify([]));
+        return;
+    }
     const params = new URLSearchParams();
     if (searchTitle) {
         params.append('title', searchTitle)
@@ -51,17 +55,20 @@ async function handleSearchTasks() {
     const query = params.toString()
     const queryString = query ? `?${query}` : ''
 
-    await fetch(`/tasks${queryString}`, {
+    const response = await fetch(`/tasks${queryString}`, {
         method: 'get',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         }
-    })
-        .then(promise => promise.json()
-        .then(tasks =>
-            store.setTasks(JSON.stringify(tasks.items))
-        ).catch(err => console.log("Это из поиска" + err)));
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка получения данных из json: ${response.status}`);
+    }
+
+    const body = await response.json();
+    store.setTasks(JSON.stringify(body.items));
+
     const analyticsBody = {
         action: 'search',
         searchTitle: searchTitle,
@@ -80,16 +87,17 @@ async function handleLogout () {
     if (!accessToken) {
         throw new Error("Пользователь не авторизован")
     }
-    await fetch('/logout', {
+    const response = await fetch('/logout', {
         method: 'post',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         }
-    }).then(res => {
-        if (res.ok)
-            localStorage.removeItem('accessToken');
-    }).catch(err => console.log(err));
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка выхода из профиля: ${response.status}`);
+    }
+    localStorage.removeItem('accessToken');
     console.log('logout')
 }
 
