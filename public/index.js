@@ -22,11 +22,13 @@ async function handleLogin(username='vanya', password='123') {
 
 // Задача #2
 async function handleInputChange({ target: { value }}) {
+    store.setSearchTitle(value);
     console.log(`searchTitle changed to "${value}"`)
 }
 
 // Задача #2
 async function handleSelectChange({ target: { value }}) {
+    store.setFilterStatus(value);
     console.log(`filterStatus changed to "${value}"`)
 }
 
