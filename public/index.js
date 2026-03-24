@@ -65,6 +65,15 @@ async function handleSearchTasks() {
         .then(tasks =>
             store.setTasks(JSON.stringify(tasks.items))
         ));
+    const analyticsBody = {
+        action: 'search',
+        searchTitle: searchTitle,
+        filterStatus: filterStatus
+    }
+    const analytics = navigator.sendBeacon('/analytics', JSON.stringify(analyticsBody));
+    if (!analytics) {
+        throw new Error("Не удалось отправить аналитику")
+    }
     console.log('search')
 }
 
