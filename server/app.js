@@ -4,7 +4,7 @@ const tasks = require('./tasks.json');
 
 
 const app = express()
-const port = 5000
+const port = 8080
 const ROOT_DIR = path.dirname(__dirname)
 let ACCESS_TOKEN = null
 
@@ -56,7 +56,7 @@ app.post('/logout', (req, res) => {
     res.sendStatus(200)
 })
 
-app.post('/analytics', (req, res) => {
+app.get('/analytics', (req, res) => {
     res.status(200).send('OK')
 })
 
@@ -71,4 +71,3 @@ app.delete('/clear', (req, res) => {
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
 })
-
