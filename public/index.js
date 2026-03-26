@@ -4,26 +4,23 @@ import * as view from './view.js';
 
 // Задача #1
 async function handleLogin() {
-    const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username: '', password: '' }),
-    })
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: 'Kirill', password: '12345' }),
+        })
 
-    if (response.ok) {
-        const data = await response.json()
-        if (localStorage){
+        if (response.ok) {
+            const data = await response.json()
             localStorage.setItem("accessToken", data.accessToken)
-            view.updateAppContent()
         }
-        else
-            alert('Не удалось войти. Попробуйте еще раз!')
-    } else {
+    } catch (error) {
+        console.log(error)
         alert('Не удалось войти. Попробуйте еще раз!')
     }
-
 }
 
 // Задача #2
@@ -36,38 +33,53 @@ async function handleSelectChange({ target: { value }}) {
     store.setFilterStatus(value)
 }
 
+function sendAnalyticsData(searchTitle, filterStatus) {
+    const image = new Image()
+    const params = new URLSearchParams();
+    if(searchTitle === null || searchTitle === "") {
+        return
+    } else {
+        params.set("filterStatus", filterStatus);
+        params.set("searchTitle", searchTitle);
+    }
+    console.log(params.toString())
+    image.src = `/analytics?${params.toString()}`
+}
+
 // Задача #3 и #4
 async function handleSearchTasks() {
-    const image = new Image()
+
     if (!store.isAuthorized()) {
         return
     }
-    var getTasks = new XMLHttpRequest()
-    let token;
-    let searchTitle;
-    let filterStatus;
-    if (localStorage) {
+    const getTasks = new XMLHttpRequest()
+    try {
+        let token;
+        let searchTitle;
+        let filterStatus;
         searchTitle = localStorage.getItem("searchTitle")
         filterStatus = localStorage.getItem("filterStatus")
         token = localStorage.getItem("accessToken")
-    }
-    if (searchTitle || filterStatus) {
-        getTasks.open("GET", `/tasks?title=${searchTitle}&status=${filterStatus}`)
-    } else {
-        getTasks.open("GET", '/tasks')
-    }
-    image.src = `/analytics?searchTitle=${searchTitle}filterStatus=${filterStatus}`
-    getTasks.setRequestHeader("Content-Type", "application/json")
-    getTasks.setRequestHeader("Authorization", `BEARER ${token}`)
-    getTasks.send()
-    getTasks.onload = function() {
-        if (getTasks.status === 200) {
-            const data = JSON.parse(getTasks.response).items
-            store.setTasks(JSON.stringify(data))
-            view.updateTaskList()
+        if (searchTitle || filterStatus) {
+            getTasks.open("GET", `/tasks?title=${searchTitle}&status=${filterStatus}`)
         } else {
-            alert('Ошибка при загрузке задач')
+            getTasks.open("GET", '/tasks')
         }
+        sendAnalyticsData(searchTitle, filterStatus)
+        getTasks.setRequestHeader("Content-Type", "application/json")
+        getTasks.setRequestHeader("Authorization", `BEARER ${token}`)
+        getTasks.onload = function () {
+            if (getTasks.status === 200) {
+                const data = JSON.parse(getTasks.response).items
+                store.setTasks(JSON.stringify(data))
+            } else {
+                alert('Ошибка при загрузке задач')
+            }
+        }
+        getTasks.send()
+    } catch (error) {
+        console.log(error)
+        alert('Ошибка при загрузке задач')
     }
 
 }
