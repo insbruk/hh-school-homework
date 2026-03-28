@@ -17,8 +17,8 @@ async function handleLogin() {
             const data = await response.json()
             localStorage.setItem("accessToken", data.accessToken)
         }
+        throw new Error('Ошибка при входе')
     } catch (error) {
-        console.log(error)
         alert('Не удалось войти. Попробуйте еще раз!')
     }
 }
@@ -36,12 +36,8 @@ async function handleSelectChange({ target: { value }}) {
 function sendAnalyticsData(searchTitle, filterStatus) {
     const image = new Image()
     const params = new URLSearchParams();
-    if(searchTitle === null || searchTitle === "") {
-        return
-    } else {
-        params.set("filterStatus", filterStatus);
-        params.set("searchTitle", searchTitle);
-    }
+    if (filterStatus) params.set("filterStatus", filterStatus);
+    if (searchTitle) params.set("searchTitle", searchTitle);
     console.log(params.toString())
     image.src = `/analytics?${params.toString()}`
 }
@@ -54,17 +50,18 @@ async function handleSearchTasks() {
     }
     const getTasks = new XMLHttpRequest()
     try {
-        let token;
-        let searchTitle;
-        let filterStatus;
-        searchTitle = localStorage.getItem("searchTitle")
-        filterStatus = localStorage.getItem("filterStatus")
-        token = localStorage.getItem("accessToken")
+        const searchTitle = localStorage.getItem("searchTitle")
+        const filterStatus = localStorage.getItem("filterStatus")
+        const token = localStorage.getItem("accessToken")
+        const params = new URLSearchParams();
+        if (searchTitle) params.set("searchTitle", searchTitle);
+        if (filterStatus) params.set("filterStatus", filterStatus);
         if (searchTitle || filterStatus) {
-            getTasks.open("GET", `/tasks?title=${searchTitle}&status=${filterStatus}`)
+            getTasks.open("GET", `/tasks?${params.toString()}`)
         } else {
             getTasks.open("GET", '/tasks')
         }
+        if(search)
         sendAnalyticsData(searchTitle, filterStatus)
         getTasks.setRequestHeader("Content-Type", "application/json")
         getTasks.setRequestHeader("Authorization", `BEARER ${token}`)
@@ -73,12 +70,11 @@ async function handleSearchTasks() {
                 const data = JSON.parse(getTasks.response).items
                 store.setTasks(JSON.stringify(data))
             } else {
-                alert('Ошибка при загрузке задач')
+                throw new Error('Ошибка загрузке задач')
             }
         }
         getTasks.send()
     } catch (error) {
-        console.log(error)
         alert('Ошибка при загрузке задач')
     }
 
@@ -101,7 +97,7 @@ async function handleLogout() {
             localStorage.removeItem("tasks")
             alert("Logout successful")
         } else {
-            alert('Ошибка при выходе')
+            throw new Error('Ошибка при выходе')
         }
     }).catch(error => {
         alert('Ошибка при выходе')
