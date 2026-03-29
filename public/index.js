@@ -32,11 +32,13 @@ async function handleLogin() {
 // Задача #2
 async function handleInputChange({ target: { value } }) {
     store.setSearchTitle(value);
+    debouncedSearch();
 }
 
 // Задача #2
 async function handleSelectChange({ target: { value } }) {
     store.setFilterStatus(value);
+    debouncedSearch();
 }
 
 // Задача #3 и #4
@@ -113,6 +115,67 @@ async function handleLogout() {
     localStorage.removeItem("accessToken");
 }
 
+const clearButtonElement = document.getElementById('clearButton'); 
+clearButtonElement.addEventListener('click', handleClearFilters);
+
+async function handleClearFilters() {
+    store.setSearchTitle('');
+    store.setFilterStatus('');
+    store.setTasks(JSON.stringify([]));
+
+    view.updateSearchInput('');
+    view.updateFilterStatus('');
+
+    await handleSearchTasks();
+    view.updateAppContent();
+    showEmptyState();
+}
+
+function debounce(fn, delay = 500) {
+    let timeoutId;
+
+    return (...args) => {
+        clearTimeout(timeoutId);
+
+        timeoutId = setTimeout(() => {
+            fn(...args);
+        }, delay);
+    };
+}
+
+async function refreshSearchView() {
+    try {
+        await handleSearchTasks();
+        view.updateAppContent();
+        showEmptyState();
+    } catch (e) {
+        console.error(e);
+        alert("Ошибка поиска");
+    }
+}
+
+const debouncedSearch = debounce(refreshSearchView, 500);
+
+function showEmptyState() {
+    const tasksContainer = document.getElementById('tasks');
+    if (!tasksContainer) return;
+
+    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    if (!Array.isArray(tasks)) return;
+
+    if (tasks.length === 0 && store.isAuthorized()) {
+        tasksContainer.innerHTML = '';
+
+        const message = document.createElement('div');
+        message.textContent = 'Ничего не найдено';
+        message.style.padding = '16px';
+        message.style.textAlign = 'center';
+        message.style.color = '#666';
+
+        tasksContainer.appendChild(message);
+    }
+}
+
 // Код ниже редактировать не нужно
 async function handleSearch() {
     await handleSearchTasks()
@@ -140,6 +203,7 @@ async function handleAuthorization () {
 
 handleSearchTasks().then(() => {
     view.updateAppContent()
+    showEmptyState()
     view.updateSearchInput(localStorage.getItem('searchTitle') || '')
     view.updateFilterStatus(localStorage.getItem('filterStatus') || '')
 })

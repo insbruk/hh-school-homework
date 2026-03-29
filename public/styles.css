@@ -1,0 +1,108 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f5f6f8;
+    margin: 0;
+    padding: 20px;
+}
+
+main {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+    font-size: 28px;
+}
+
+h2 {
+    margin-top: 16px;
+    font-size: 20px;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+#searchButton {
+    background-color: #256409;
+    color: white;
+}
+
+#searchButton:hover {
+    background-color: #154103;
+}
+
+#clearButton {
+    background-color: #e5e7eb;
+}
+
+#clearButton:hover {
+    background-color: #d1d5db;
+}
+
+#authButton {
+    background-color: #111827;
+    color: white;
+}
+
+#authButton:hover {
+    background-color: #374151;
+}
+
+input,
+select {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #256409;
+}
+
+#tasks {
+    margin-top: 12px;
+}
+
+#tasks > div {
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+#tasks > div {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+}
+
+#tasks > div:contains("completed") {
+    background-color: #e8f7e8;
+    border-color: #b7e3b7;
+    color: #1f7a1f;
+}
+
+#tasks > div:contains("uncompleted") {
+    background-color: #fdecec;
+    border-color: #f5b5b5;
+    color: #b42318;
+}
+
+.empty {
+    text-align: center;
+    padding: 20px;
+    color: #6b7280;
+    background: #f3f4f6;
+    border-radius: 10px;
+}
