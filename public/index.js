@@ -16,8 +16,9 @@ async function handleLogin() {
         if (response.ok) {
             const data = await response.json()
             localStorage.setItem("accessToken", data.accessToken)
+        } else {
+            throw new Error('Ошибка при входе')
         }
-        throw new Error('Ошибка при входе')
     } catch (error) {
         alert('Не удалось войти. Попробуйте еще раз!')
     }
@@ -61,7 +62,6 @@ async function handleSearchTasks() {
         } else {
             getTasks.open("GET", '/tasks')
         }
-        if(search)
         sendAnalyticsData(searchTitle, filterStatus)
         getTasks.setRequestHeader("Content-Type", "application/json")
         getTasks.setRequestHeader("Authorization", `BEARER ${token}`)
