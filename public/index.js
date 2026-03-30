@@ -7,7 +7,7 @@ async function handleLogin(username='vanya', password='123') {
     if (!username || !password)
         throw new Error("Отсутствуют данные")
 
-    const response = await fetch('login', {
+    const response = await fetch('/login', {
         method: 'post',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({username: username, password: password}),
@@ -40,7 +40,7 @@ async function handleSearchTasks() {
     const searchTitle = localStorage.getItem('searchTitle') || '';
 
     if (!accessToken) {
-        store.setTasks(JSON.stringify([]));
+        store.reset();
         return;
     }
     const params = new URLSearchParams();
@@ -76,7 +76,7 @@ async function handleSearchTasks() {
     }
     const analytics = navigator.sendBeacon('/analytics', JSON.stringify(analyticsBody));
     if (!analytics) {
-        throw new Error("Не удалось отправить аналитику")
+        console.error("Не удалось отправить аналитику")
     }
     console.log('search')
 }
@@ -85,7 +85,8 @@ async function handleSearchTasks() {
 async function handleLogout () {
     const accessToken = localStorage.getItem('accessToken') || '';
     if (!accessToken) {
-        throw new Error("Пользователь не авторизован")
+        store.reset();
+        return;
     }
     const response = await fetch('/logout', {
         method: 'post',
