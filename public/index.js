@@ -122,7 +122,7 @@ async function handleSearchTasks() {
     const searchTitle = localStorage.getItem('searchTitle');
     const filterStatus = localStorage.getItem('filterStatus');
 
-    if(searchTitle) {
+    if(searchTitle?.trim()) {
         url.searchParams.append('title', searchTitle.trim());
     }
 
