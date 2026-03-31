@@ -7,7 +7,12 @@ const SortingOptions = {
     DESC: 'desc'
 }
 
+// Site Urls
 const BASE_URL = 'http://localhost:5000';
+const LOGIN_URL = `${BASE_URL}/login`;
+const TASKS_URL = `${BASE_URL}/tasks`;
+const ANALYTICS_URL = `${BASE_URL}/analytics`;
+
 const sortBtn = document.getElementById('sortButton');
 let currentSortOption = SortingOptions.ASC;
 
@@ -38,20 +43,18 @@ function sortTasks(tasks, option=SortingOptions.ASC) {
         throw new Error(`Expected array, given ${typeof tasks}`);
     }
 
-    const sortedTasks = [...tasks];
-    if(option === SortingOptions.ASC) {
-        sortedTasks.sort((currentTask, nextTask) => 
-            currentTask.title.localeCompare(nextTask.title));
-    } 
-    else if (option === SortingOptions.DESC){
-        sortedTasks.sort((currentTask, nextTask) => 
-            nextTask.title.localeCompare(currentTask.title));
-    }
-    else {
+    if(!Object.values(SortingOptions).includes(option)) {
         throw new Error(`Unknown sorting option ${option}`);
     }
 
-    return sortedTasks;
+    if(option === SortingOptions.ASC) {
+        return tasks.toSorted((currentTask, nextTask) => 
+            currentTask.title.localeCompare(nextTask.title));
+    } 
+    else {
+        return tasks.toSorted((currentTask, nextTask) => 
+            nextTask.title.localeCompare(currentTask.title));
+    }
 }
 
 // Обработчик при нажатии на кнопку сортировки
@@ -77,7 +80,7 @@ async function handleLogin () {
     const password = '1234';
 
     try {
-        const response = await fetch(`${BASE_URL}/login`, {
+        const response = await fetch(LOGIN_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -86,7 +89,7 @@ async function handleLogin () {
         });
 
         if(!response.ok) {
-            throw new Error(`Статус ответа: ${response.status}\n${response.statusMessage}`);
+            throw new Error(`Статус ответа: ${response.status}\n${response.statusText}`);
         }
 
         console.log('login');
@@ -100,13 +103,8 @@ async function handleLogin () {
 
 // Задача #2
 async function handleInputChange({ target: { value }}) {
-    if(value.length === 0) {
-        localStorage.removeItem('searchTitle');
-        console.log('searchTitle was removed from localStorage');
-    } else {
-        localStorage.setItem('searchTitle', value);
-        console.log(`searchTitle changed to "${value}"`);
-    }
+    localStorage.setItem('searchTitle', value);
+    console.log(`searchTitle changed to "${value}"`);
     await handleSearch();
 }
 
@@ -119,12 +117,12 @@ async function handleSelectChange({ target: { value }}) {
 
 // Задача #3 и #4
 async function handleSearchTasks() {
-    const url = new URL(`${BASE_URL}/tasks`);
+    const url = new URL(TASKS_URL);
     const token = localStorage.getItem('accessToken');
     const searchTitle = localStorage.getItem('searchTitle');
     const filterStatus = localStorage.getItem('filterStatus');
 
-    if(searchTitle?.trim()) {
+    if(searchTitle) {
         url.searchParams.append('title', searchTitle.trim());
     }
 
@@ -142,26 +140,26 @@ async function handleSearchTasks() {
         });
 
         if(!response.ok) {
-            throw new Error(`Статус ответа: ${response.status}\n${response.statusMessage}`);
+            throw new Error(`Статус ответа: ${response.status}\n${response.statusText}`);
         }
 
         console.log('search')
         const data = await response.json();
         localStorage.setItem('tasks', JSON.stringify(data.items));
+
+        // Отправка запроса на сервер без получения данных
+        const beaconData = JSON.stringify ({
+            action: 'search',
+            searchTitle: searchTitle || '',
+            filterStatus: filterStatus || ''
+        });
+
+        const beaconResponseStatus = navigator.sendBeacon(ANALYTICS_URL, beaconData);
+        console.log(beaconResponseStatus);
+
     } catch (error) {
         console.error(`Ошибка: ${error}`);
     }
-
-    // Отправка запроса на сервер без получения данных
-    const analyticsUrl = `${BASE_URL}/analytics`;
-    const beaconData = JSON.stringify ({
-        action: 'search',
-        searchTitle: searchTitle || '',
-        filterStatus: filterStatus || ''
-    });
-
-    const beaconResponseStatus = navigator.sendBeacon(analyticsUrl, beaconData);
-    console.log(beaconResponseStatus);
 }
 
 // Задача #5
@@ -177,7 +175,7 @@ async function handleLogout () {
         });
 
         if(!response.ok) {
-            throw new Error(`${response.status}\n${response.statusMessage}`);
+            throw new Error(`${response.status}\n${response.statusText}`);
         }
         console.log('logout');
         localStorage.removeItem('accessToken');
