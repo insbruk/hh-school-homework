@@ -40,14 +40,6 @@ async function handleSearchTasks() {
     const searchTitle = localStorage.getItem('searchTitle') || '';
     const filterStatus = localStorage.getItem('filterStatus') || '';
 
-    navigator.sendBeacon(
-      '/analytics',
-      new Blob(
-        [JSON.stringify({ action: 'search', searchTitle, filterStatus }),],
-        { type: 'application/json' }
-      )
-    )
-
     const params = new URLSearchParams();
     if (searchTitle) params.set('title', searchTitle);
     if (filterStatus) params.set('status', filterStatus);
@@ -70,6 +62,14 @@ async function handleSearchTasks() {
     const data = await response.json();
 
     store.setTasks(JSON.stringify(data.items));
+
+    navigator.sendBeacon(
+      '/analytics',
+      new Blob(
+        [JSON.stringify({ action: 'search', searchTitle, filterStatus }),],
+        { type: 'application/json' }
+      )
+    )
 
     console.log('search')
 }
