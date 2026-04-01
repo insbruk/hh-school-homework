@@ -54,7 +54,7 @@ async function handleSearchTasks() {
   const accessToken = localStorage.getItem("accessToken");
 
   if (!store.isAuthorized()) {
-    store.setTasks(JSON.stringify([]));
+    store.reset();
     return;
   }
 
