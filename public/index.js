@@ -4,23 +4,23 @@ import * as view from './view.js';
 
 // Задача #1
 async function handleLogin () {
-    const login = await fetch('http://localhost:5000/login', {
+    const login = await fetch('http://localhost:8000/login', {
         method: 'POST',
-          headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        username: 'admin',
-        password: '123'
-    })
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: 'admin',
+            password: '123'
+        })
     })
     if (!login.ok) {
         throw new Error('Не удалось авторизоваться')
     }
     const data = await login.json()
 
-    if(data.accessToken) {
-        store.setToken(data.accessToken)
+    if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken)
     }
 }
 
@@ -36,45 +36,43 @@ async function handleSelectChange({ target: { value }}) {
     localStorage.setItem('filterStatus', value)
 }
 
-// //Задача #3 и #4
-// async function handleSearchTasks() {
-//     try {
-//         const token = store.getToken(); // получаем токен из store
-//         const response = await fetch(`http://localhost:8000/tasks?title=${localStorage.getItem('searchTitle') || ''}&status=${localStorage.getItem('filterStatus') || 'all'}`, {
-//             method: 'GET',
-//             headers: {
-//                 'Authorization': `Bearer ${token}`
-//             }
-//         });
+//Задача #3 и #4
+async function handleSearchTasks() {
+    try {
+        const token = localStorage.getItem('accessToken')
+        const response = await fetch(`http://localhost:8000/tasks?title=${localStorage.getItem('searchTitle') || ''}&status=${localStorage.getItem('filterStatus') || 'all'}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
 
-//         if (!response.ok) {
-//             throw new Error('Не удалось получить задачи');
-//         }
+        if (!response.ok) {
+            throw new Error('Не удалось получить задачи');
+        }
 
-//         const data = await response.json();
+        const data = await response.json();
 
-        
-//         localStorage.setItem('tasks', JSON.stringify(data.items));
-//         store.setTasks(data.items); 
+        localStorage.setItem('tasks', JSON.stringify(data.items));
 
-//         const analyticsData = {
-//             action: 'search',
-//             searchTitle: localStorage.getItem('searchTitle') || '',
-//             filterStatus: localStorage.getItem('filterStatus') || 'all'
-//         };
+        const analyticsData = {
+            action: 'search',
+            searchTitle: localStorage.getItem('searchTitle') || '',
+            filterStatus: localStorage.getItem('filterStatus') || 'all'
+        };
 
-//         const blob = new Blob([JSON.stringify(analyticsData)], { type: 'application/json' });
-//         navigator.sendBeacon('http://localhost:8000/analytics', blob);
+        const blob = new Blob([JSON.stringify(analyticsData)], { type: 'application/json' });
+        navigator.sendBeacon('http://localhost:8000/analytics', blob);
 
-//     } catch (err) {
-//         console.error(err);
-//         alert('Ошибка при получении задач или отправке аналитики');
-//     }
-// }
+    } catch (err) {
+        console.error(err);
+        alert('Ошибка при получении задач или отправке аналитики');
+    }
+}
 
 // Задача #5
 async function handleLogout () {
-    const token = store.getToken(); 
+    const token = localStorage.getItem('accessToken')
    const responce = await fetch('http://localhost:8000/logout', {
     method:'POST',
     headers: {
