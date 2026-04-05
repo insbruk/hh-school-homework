@@ -1,30 +1,109 @@
 import * as store from './storage.js'
 import * as view from './view.js';
 
+function getAccessToken() {
+    return localStorage.getItem('accessToken') || ''
+}
+
+function getSearchParams() {
+    return {
+        searchTitle: localStorage.getItem('searchTitle') || '',
+        filterStatus: localStorage.getItem('filterStatus') || '',
+    }
+}
+
+function getAuthorizedHeaders(extraHeaders = {}) {
+    return {
+        ...extraHeaders,
+        Authorization: `Bearer ${getAccessToken()}`,
+    }
+}
+
+async function parseResponse(response) {
+    if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+    }
+
+    const contentType = response.headers.get('content-type') || ''
+    if (contentType.includes('application/json')) {
+        return response.json()
+    }
+
+    return null
+}
 
 // Задача #1
 async function handleLogin () {
-    console.log('login')
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username: 'ivan',
+            password: '123',
+        }),
+    })
+
+    const data = await parseResponse(response)
+    localStorage.setItem('accessToken', String(data.accessToken))
 }
 
 // Задача #2
 async function handleInputChange({ target: { value }}) {
-    console.log(`searchTitle changed to "${value}"`)
+    store.setSearchTitle(value)
 }
 
 // Задача #2
 async function handleSelectChange({ target: { value }}) {
-    console.log(`filterStatus changed to "${value}"`)
+    store.setFilterStatus(value)
 }
 
 // Задача #3 и #4
 async function handleSearchTasks() {
-    console.log('search')
+    if (!store.isAuthorized()) {
+        store.setTasks(JSON.stringify([]))
+        return
+    }
+
+    const { searchTitle, filterStatus } = getSearchParams()
+    const searchParams = new URLSearchParams()
+
+    if (searchTitle) {
+        searchParams.set('title', searchTitle)
+    }
+
+    if (filterStatus) {
+        searchParams.set('status', filterStatus)
+    }
+
+    navigator.sendBeacon(
+        '/analytics',
+        JSON.stringify({
+            action: 'search',
+            searchTitle,
+            filterStatus,
+        }),
+    )
+
+    const query = searchParams.toString()
+    const response = await fetch(`/tasks${query ? `?${query}` : ''}`, {
+        headers: getAuthorizedHeaders(),
+    })
+
+    const data = await parseResponse(response)
+    store.setTasks(JSON.stringify(data.items))
 }
 
 // Задача #5
 async function handleLogout () {
-    console.log('logout')
+    const response = await fetch('/logout', {
+        method: 'POST',
+        headers: getAuthorizedHeaders(),
+    })
+
+    await parseResponse(response)
+    localStorage.removeItem('accessToken')
 }
 
 // Код ниже редактировать не нужно
