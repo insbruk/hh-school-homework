@@ -40,6 +40,8 @@ export function updateTaskList() {
                 throw new Error('tasks is not array. resetting to []')
             }
         } catch (e) {
+            // why the frick does this not log anything
+            console.error(e)
             tasks = []
             localStorage.setItem('tasks', JSON.stringify(tasks))
         }
