@@ -44,17 +44,6 @@ async function handleSearchTasks() {
         return
     }
 
-    const analyticsData = JSON.stringify({
-        action: 'search',
-        searchTitle,
-        filterStatus,
-    })
-
-    navigator.sendBeacon(
-        'http://localhost:5001/analytics',
-        new Blob([analyticsData], { type: 'application/json' }),
-    )
-
     const params = new URLSearchParams()
 
     if (searchTitle) {
@@ -69,19 +58,34 @@ async function handleSearchTasks() {
         ? `http://localhost:5001/tasks?${params.toString()}`
         : 'http://localhost:5001/tasks'
 
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-        },
-    })
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        })
 
-    if (!response.ok) {
-        throw new Error('Tasks fetch failed')
+        if (!response.ok) {
+            throw new Error('failed to fetch tasks')
+        }
+
+        const { items } = await response.json()
+        localStorage.setItem('tasks', JSON.stringify(items))
+
+        const analyticsData = JSON.stringify({
+            action: 'search',
+            searchTitle,
+            filterStatus,
+        })
+
+        navigator.sendBeacon(
+            'http://localhost:5001/analytics',
+            new Blob([analyticsData], { type: 'application/json' }),
+        )
+    } catch (error) {
+        alert('try again')
     }
-
-    const data = await response.json()
-    localStorage.setItem('tasks', JSON.stringify(data.items))
 }
 
 // Задача #5
